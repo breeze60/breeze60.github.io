@@ -108,6 +108,19 @@
         border-radius: 999px; padding: 6px 14px; font-weight: 700; font-size: 13px;
       }
       .nick-btn:hover { background: #fff; }
+      .admin-btn {
+        background: transparent; color: #f2f7ef; border: 1px solid rgba(255,255,255,.45);
+        border-radius: 999px; padding: 5px 13px; font-weight: 700; font-size: 13px;
+      }
+      .admin-btn.on { background: var(--amber); border-color: var(--amber); color: #231600; }
+      .del-btn {
+        background: none; border: 1.5px solid var(--red); color: var(--red);
+        border-radius: 999px; padding: 3px 11px; font-size: 12.5px; font-weight: 700; flex: none;
+      }
+      .campus-tag {
+        flex: none; font-size: 12px; font-weight: 700; color: #8a5a00;
+        background: var(--amber-bg); border-radius: 6px; padding: 3px 8px;
+      }
 
       main { max-width: 1060px; margin: 0 auto; padding: 18px 14px 90px; }
 
@@ -217,7 +230,7 @@
       form label { display: block; font-weight: 700; font-size: 13.5px; margin-bottom: 6px; }
       form label .req { color: var(--red); }
       form label .hint { font-weight: 400; color: var(--ink-faint); font-size: 12.5px; }
-      form input[type="text"], form input[type="number"], form select, form textarea {
+      form input[type="text"], form input[type="number"], form input[type="password"], form select, form textarea {
         width: 100%; padding: 10px 12px; border: 1.5px solid var(--line);
         border-radius: 10px; background: var(--surface); outline: none;
       }
@@ -272,6 +285,7 @@
         <div class="head-meta">
           <span class="live-pill"><span class="live-dot" id="liveDot"></span><span id="liveText">正在连接云端…</span></span>
           <button class="nick-btn" id="nickBtn" type="button">设置昵称</button>
+          <button class="admin-btn" id="adminBtn" type="button">管理</button>
         </div>
       </div>
     </header>
@@ -290,6 +304,7 @@
           </select>
           <button class="add-btn" id="addBtn" type="button">＋ 推荐一家小馆</button>
         </div>
+        <div class="chips" id="campusChips"></div>
         <div class="chips" id="catChips"></div>
       </div>
 
@@ -314,6 +329,10 @@
           <div class="field">
             <label for="fCategory">分类 <span class="req">*</span></label>
             <select id="fCategory"></select>
+          </div>
+          <div class="field">
+            <label for="fCampus">校区 <span class="req">*</span></label>
+            <select id="fCampus"></select>
           </div>
           <div class="field">
             <label for="fLocation">位置 <span class="hint">写清楚在哪，方便大家找</span></label>
@@ -370,6 +389,25 @@
       </div>
     </div>
 
+    <!-- 管理入口 -->
+    <div class="overlay" id="adminOverlay">
+      <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminTitle">
+        <div class="sheet-head">
+          <h2 class="sheet-title" id="adminTitle">管理入口</h2>
+          <button class="close-btn" type="button" data-close="adminOverlay" aria-label="关闭">✕</button>
+        </div>
+        <p style="color:var(--ink-soft);margin:10px 0 0;">只有墙主能进。进管理模式后，每家店和每条评价旁会出现删除按钮，乱填的、广告、重复的都能直接删掉。</p>
+        <form id="adminForm" novalidate>
+          <div class="field">
+            <label for="adminInput">管理口令 <span class="req">*</span></label>
+            <input type="password" id="adminInput" maxlength="32" placeholder="输入口令" autocomplete="off" />
+          </div>
+          <p class="form-err" id="adminErr"></p>
+          <button class="submit-btn" type="submit">进入管理模式</button>
+        </form>
+      </div>
+    </div>
+
     <!-- 昵称 -->
     <div class="overlay" id="nickOverlay">
       <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="nickTitle">
@@ -404,6 +442,8 @@
       var baseIdx = 0;          /* 当前优先使用的域名下标，连通后会记住 */
       var REQ_TIMEOUT = 10000;  /* 单次请求超时（毫秒），微信网络慢时不无限等 */
       var CATEGORIES = ['面馆', '米饭快餐', '炒菜小馆', '饺子馄饨', '麻辣烫冒菜', '烧烤', '轻食健康', '其他'];
+      var CAMPUSES = ['阜新南校', '阜新北校', '葫芦岛校区'];
+      var ADMIN_HASH = '410d2fc44e38683226f6570aedd7eb5906cd68654ad94ccf07fd53e254273cce'; /* 管理口令的 SHA-256，源码里不存明文 */
       var POLL_MS = 10000;
 
       var state = {
@@ -412,6 +452,8 @@
         loaded: false,
         loadError: false,
         filterCat: '全部',
+        filterCampus: '全部校区',
+        admin: false,
         healthyOnly: false,
         search: '',
         sort: 'score',
@@ -420,6 +462,7 @@
         nick: ''
       };
       try { state.nick = localStorage.getItem('foodwall_nickname') || ''; } catch (e) { state.nick = ''; }
+      try { state.admin = sessionStorage.getItem('foodwall_admin') === '1'; } catch (e) { state.admin = false; }
 
       var $ = function (id) { return document.getElementById(id); };
 
@@ -551,6 +594,14 @@
       }
 
       /* ---------- 渲染 ---------- */
+      function campusOf(s) { return s.campus || '未分校区'; }
+      function renderCampusChips() {
+        var html = '<button type="button" class="chip' + (state.filterCampus === '全部校区' ? ' active' : '') + '" data-campus="全部校区">全部校区</button>';
+        CAMPUSES.forEach(function (c) {
+          html += '<button type="button" class="chip' + (state.filterCampus === c ? ' active' : '') + '" data-campus="' + esc(c) + '">' + esc(c) + '</button>';
+        });
+        $('campusChips').innerHTML = html;
+      }
       function renderChips() {
         var html = '<button type="button" class="chip' + (state.filterCat === '全部' && !state.healthyOnly ? ' active' : '') + '" data-cat="全部">全部</button>';
         CATEGORIES.forEach(function (c) {
@@ -563,6 +614,7 @@
       function visibleShops() {
         var q = state.search.trim().toLowerCase();
         var list = state.shops.filter(function (s) {
+          if (state.filterCampus !== '全部校区' && campusOf(s) !== state.filterCampus) return false;
           if (state.healthyOnly && !s.healthy) return false;
           if (!state.healthyOnly && state.filterCat !== '全部' && s.category !== state.filterCat) return false;
           if (q) {
@@ -596,19 +648,22 @@
         if (s.location) meta += '<span>📍 <b>' + esc(s.location) + '</b></span>';
         if (s.dishes) meta += '<span>🍽 推荐菜：<b>' + esc(s.dishes) + '</b></span>';
         if (s.avgPrice) meta += '<span>💰 人均约 <b>' + esc(s.avgPrice) + ' 元</b></span>';
+        var adminDel = state.admin ? '<button type="button" class="del-btn" data-del-shop="' + esc(s.objectId) + '">删除</button>' : '';
         return '<article class="card" data-open="' + esc(s.objectId) + '">' +
-          '<div class="card-head"><h3 class="card-name">' + esc(s.name) + '</h3><span class="cat-tag">' + esc(s.category || '其他') + '</span></div>' +
+          '<div class="card-head"><h3 class="card-name">' + esc(s.name) + '</h3><span style="display:flex;gap:6px;flex:none;"><span class="campus-tag">' + esc(campusOf(s)) + '</span><span class="cat-tag">' + esc(s.category || '其他') + '</span></span></div>' +
           '<div class="score-row">' + scoreHtml + '</div>' +
           (s.note ? '<p class="card-note">' + esc(s.note) + '</p>' : '') +
           (meta ? '<div class="meta-list">' + meta + '</div>' : '') +
           (tags ? '<div class="tag-row">' + tags + '</div>' : '') +
           '<div class="card-foot"><span class="added-by">' + esc(s.addedBy || '一位同学') + ' 推荐 · ' + fmtTime(s.createdAt) + '</span>' +
-          '<button type="button" class="rate-link" data-rate="' + esc(s.objectId) + '">打分评价 →</button></div>' +
+          '<span style="display:flex;gap:8px;align-items:center;">' + adminDel + '<button type="button" class="rate-link" data-rate="' + esc(s.objectId) + '">打分评价 →</button></span></div>' +
           '</article>';
       }
 
       function render() {
+        renderCampusChips();
         renderChips();
+        syncAdminBtn();
         $('nickBtn').textContent = state.nick ? ('昵称：' + state.nick) : '设置昵称';
         var area = $('listArea');
         if (state.loadError) {
@@ -651,6 +706,7 @@
         var tags = (s.tags || []).map(function (t) { return '<span class="tag">' + esc(t) + '</span>'; }).join('');
         if (s.healthy) tags = '<span class="tag health">健康之选</span>' + tags;
         var meta = '';
+        meta += '<span>🏫 校区：<b>' + esc(campusOf(s)) + '</b></span>';
         meta += '<span>🏷 分类：<b>' + esc(s.category || '其他') + '</b></span>';
         if (s.location) meta += '<span>📍 位置：<b>' + esc(s.location) + '</b></span>';
         if (s.dishes) meta += '<span>🍽 推荐菜：<b>' + esc(s.dishes) + '</b></span>';
@@ -663,11 +719,13 @@
           (s.note ? '<p class="card-note" style="margin-top:10px;">' + esc(s.note) + '</p>' : '') +
           '<div class="meta-list detail-meta">' + meta + '</div>' +
           (tags ? '<div class="tag-row">' + tags + '</div>' : '') +
-          '<p class="added-by" style="margin-top:10px;">' + esc(s.addedBy || '一位同学') + ' 推荐 · ' + fmtTime(s.createdAt) + '</p>';
+          '<p class="added-by" style="margin-top:10px;">' + esc(s.addedBy || '一位同学') + ' 推荐 · ' + fmtTime(s.createdAt) + '</p>' +
+          (state.admin ? '<div style="margin-top:12px;"><button type="button" class="del-btn" data-del-shop="' + esc(s.objectId) + '">删除这家店（管理）</button></div>' : '');
         $('dReviewsHead').textContent = '大家的评价（' + list.length + '）';
         $('dReviews').innerHTML = list.length ? list.map(function (r) {
           return '<div class="review-item"><div class="review-top"><span class="review-author">' + esc(r.author || '一位同学') +
-            '</span><span class="review-time">' + fmtTime(r.createdAt) + '</span></div>' +
+            '</span><span style="display:flex;gap:8px;align-items:center;"><span class="review-time">' + fmtTime(r.createdAt) + '</span>' +
+            (state.admin ? '<button type="button" class="del-btn" data-del-review="' + esc(r.objectId) + '">删除</button>' : '') + '</span></div>' +
             '<span class="stars" style="font-size:13px;">' + starStr(Number(r.stars) || 0) + '</span>' +
             (r.text ? '<p class="review-text">' + esc(r.text) + '</p>' : '') + '</div>';
         }).join('') : '<p class="empty-reviews">还没有评价，快来写下第一条。</p>';
@@ -679,6 +737,52 @@
           html += '<button type="button" data-star="' + i + '" class="' + (i <= state.pickedStars ? 'lit' : '') + '" aria-label="' + i + ' 星">★</button>';
         }
         $('starPicker').innerHTML = html;
+      }
+
+      /* ---------- 管理模式 ---------- */
+      function syncAdminBtn() {
+        var b = $('adminBtn');
+        if (!b) return;
+        b.textContent = state.admin ? '管理模式中 · 退出' : '管理';
+        b.classList.toggle('on', state.admin);
+      }
+      function setAdmin(on) {
+        state.admin = on;
+        try {
+          if (on) sessionStorage.setItem('foodwall_admin', '1');
+          else sessionStorage.removeItem('foodwall_admin');
+        } catch (e) {}
+        syncAdminBtn();
+        render();
+      }
+      function sha256Hex(str) {
+        if (!(window.crypto && crypto.subtle && window.TextEncoder)) return Promise.reject(new Error('unsupported'));
+        return crypto.subtle.digest('SHA-256', new TextEncoder().encode(str)).then(function (buf) {
+          return Array.prototype.map.call(new Uint8Array(buf), function (b) { return ('0' + b.toString(16)).slice(-2); }).join('');
+        });
+      }
+      function deleteShop(id) {
+        var s = null;
+        state.shops.forEach(function (x) { if (x.objectId === id) s = x; });
+        if (!s) return;
+        if (!window.confirm('确定删除「' + (s.name || '这家店') + '」吗？它下面的评价会一起删掉，删了恢复不了。')) return;
+        var revs = reviewsOf(id);
+        var chain = bmob('FoodShops/' + id, 'DELETE');
+        revs.forEach(function (r) {
+          chain = chain.then(function () { return bmob('FoodReviews/' + r.objectId, 'DELETE'); });
+        });
+        chain.then(function () {
+          if (state.detailId === id) closeOverlay('detailOverlay');
+          toast('已删除「' + (s.name || '这家店') + '」和它的 ' + revs.length + ' 条评价');
+          refresh();
+        }).catch(function () { toast('删除失败，网络可能不稳，再试一次'); });
+      }
+      function deleteReview(id) {
+        if (!window.confirm('确定删除这条评价吗？删了恢复不了。')) return;
+        bmob('FoodReviews/' + id, 'DELETE').then(function () {
+          toast('评价已删除');
+          refresh();
+        }).catch(function () { toast('删除失败，网络可能不稳，再试一次'); });
       }
 
       /* ---------- 数据同步 ---------- */
@@ -760,6 +864,12 @@
         var closer = e.target.closest('[data-close]');
         if (closer) { closeOverlay(closer.getAttribute('data-close')); return; }
         if (e.target.classList && e.target.classList.contains('overlay')) { closeOverlay(e.target.id); return; }
+        var camp = e.target.closest('[data-campus]');
+        if (camp) { state.filterCampus = camp.getAttribute('data-campus'); render(); return; }
+        var delS = e.target.closest('[data-del-shop]');
+        if (delS) { e.stopPropagation(); deleteShop(delS.getAttribute('data-del-shop')); return; }
+        var delR = e.target.closest('[data-del-review]');
+        if (delR) { e.stopPropagation(); deleteReview(delR.getAttribute('data-del-review')); return; }
         var chip = e.target.closest('[data-cat]');
         if (chip) { state.filterCat = chip.getAttribute('data-cat'); state.healthyOnly = false; render(); return; }
         var hchip = e.target.closest('[data-healthy]');
@@ -776,6 +886,29 @@
       });
 
       $('addBtn').addEventListener('click', openAdd);
+      $('adminBtn').addEventListener('click', function () {
+        if (state.admin) { setAdmin(false); toast('已退出管理模式'); return; }
+        $('adminInput').value = '';
+        $('adminErr').textContent = '';
+        openOverlay('adminOverlay');
+        setTimeout(function () { $('adminInput').focus(); }, 60);
+      });
+      $('adminForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var v = $('adminInput').value;
+        if (!v) { $('adminErr').textContent = '先输入口令。'; return; }
+        sha256Hex(v).then(function (h) {
+          if (h === ADMIN_HASH) {
+            closeOverlay('adminOverlay');
+            setAdmin(true);
+            toast('已进入管理模式，乱填的直接删');
+          } else {
+            $('adminErr').textContent = '口令不对，再想想。';
+          }
+        }).catch(function () {
+          $('adminErr').textContent = '这台设备的浏览器不支持口令验证，换个浏览器打开试试。';
+        });
+      });
       $('nickBtn').addEventListener('click', function () {
         state._afterNick = null;
         $('nickInput').value = state.nick;
@@ -787,6 +920,7 @@
 
       /* 分类下拉填充 */
       $('fCategory').innerHTML = CATEGORIES.map(function (c) { return '<option value="' + esc(c) + '">' + esc(c) + '</option>'; }).join('');
+      $('fCampus').innerHTML = CAMPUSES.map(function (c) { return '<option value="' + esc(c) + '">' + esc(c) + '</option>'; }).join('');
 
       $('nickForm').addEventListener('submit', function (e) {
         e.preventDefault();
@@ -812,6 +946,7 @@
         var body = {
           name: name,
           category: $('fCategory').value,
+          campus: $('fCampus').value,
           location: $('fLocation').value.trim(),
           avgPrice: price,
           dishes: $('fDishes').value.trim(),
