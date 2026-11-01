@@ -1,0 +1,870 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>辽工程好吃小馆</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Serif+SC:wght@700;900&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #f4f6f1;
+        --surface: #ffffff;
+        --surface-2: #eef2e9;
+        --ink: #1d241c;
+        --ink-soft: #4c584b;
+        --ink-faint: #7d8a7b;
+        --line: #dde3d6;
+        --green: #177245;
+        --green-deep: #0e4d2e;
+        --green-ink: #0b3d24;
+        --red: #d23c28;
+        --amber: #e8930c;
+        --amber-bg: #fdf3e0;
+        --green-bg: #e5f2e9;
+        --shadow: 0 1px 2px rgba(20, 40, 25, .06), 0 8px 24px rgba(20, 40, 25, .07);
+        --radius: 14px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #10130f;
+          --surface: #1a1f19;
+          --surface-2: #232a21;
+          --ink: #eef2ea;
+          --ink-soft: #b9c4b4;
+          --ink-faint: #84927f;
+          --line: #2e382c;
+          --green: #3cb377;
+          --green-deep: #0e4d2e;
+          --green-ink: #a9dcc0;
+          --red: #f0664f;
+          --amber: #f2a93b;
+          --amber-bg: #3a2c12;
+          --green-bg: #173325;
+          --shadow: 0 1px 2px rgba(0,0,0,.35), 0 8px 24px rgba(0,0,0,.3);
+        }
+      }
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+        font-size: 15px;
+        line-height: 1.55;
+      }
+      button, input, select, textarea { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+
+      /* ---------- header ---------- */
+      header {
+        background: var(--green-deep);
+        color: #f2f7ef;
+        padding: 26px 18px 20px;
+      }
+      .head-inner { max-width: 1060px; margin: 0 auto; }
+      .head-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+      h1 {
+        font-family: "Noto Serif SC", "Songti SC", serif;
+        font-weight: 900;
+        font-size: clamp(30px, 6vw, 44px);
+        margin: 0;
+        letter-spacing: .04em;
+        line-height: 1.15;
+      }
+      h1 .seal {
+        display: inline-block;
+        background: var(--red);
+        color: #fff;
+        font-family: "Noto Sans SC", sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: .18em;
+        padding: 3px 7px 3px 9px;
+        border-radius: 4px;
+        vertical-align: middle;
+        margin-left: 10px;
+        transform: translateY(-4px);
+      }
+      .head-sub { margin: 8px 0 0; color: #cfe3d2; font-size: 14px; max-width: 34em; }
+      .head-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+      .live-pill {
+        display: inline-flex; align-items: center; gap: 7px;
+        background: rgba(255,255,255,.12);
+        border: 1px solid rgba(255,255,255,.22);
+        border-radius: 999px; padding: 5px 12px; font-size: 12.5px;
+      }
+      .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #7ee2a8; flex: none; }
+      .live-dot.on { animation: pulse 1.8s ease-in-out infinite; }
+      .live-dot.err { background: #f2a93b; animation: none; }
+      @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+      @media (prefers-reduced-motion: reduce) { .live-dot.on { animation: none; } }
+      .nick-btn {
+        background: #f2f7ef; color: var(--green-deep); border: 0;
+        border-radius: 999px; padding: 6px 14px; font-weight: 700; font-size: 13px;
+      }
+      .nick-btn:hover { background: #fff; }
+
+      main { max-width: 1060px; margin: 0 auto; padding: 18px 14px 90px; }
+
+      /* ---------- toolbar ---------- */
+      .toolbar {
+        position: sticky; top: 0; z-index: 20;
+        background: var(--bg);
+        padding: 10px 0 8px;
+      }
+      .tool-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+      .search-box { flex: 1 1 200px; position: relative; }
+      .search-box input {
+        width: 100%; padding: 10px 14px 10px 38px;
+        border: 1.5px solid var(--line); border-radius: 999px;
+        background: var(--surface); outline: none;
+      }
+      .search-box input:focus { border-color: var(--green); }
+      .search-box svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); width: 17px; height: 17px; stroke: var(--ink-faint); }
+      select.sort {
+        padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 999px;
+        background: var(--surface); outline: none;
+      }
+      .add-btn {
+        background: var(--red); color: #fff; border: 0; border-radius: 999px;
+        padding: 10px 18px; font-weight: 700; box-shadow: var(--shadow);
+      }
+      .add-btn:hover { filter: brightness(1.07); }
+      .chips { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 10px; }
+      .chip {
+        border: 1.5px solid var(--line); background: var(--surface); color: var(--ink-soft);
+        border-radius: 999px; padding: 5px 13px; font-size: 13px; font-weight: 500;
+      }
+      .chip.active { background: var(--green); border-color: var(--green); color: #fff; }
+      .chip.healthy.active { background: var(--green); }
+      .stats-line { color: var(--ink-faint); font-size: 13px; margin: 12px 2px 4px; }
+      .stats-line b { color: var(--ink); }
+
+      /* ---------- cards ---------- */
+      .grid {
+        display: grid; gap: 14px; margin-top: 10px;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      }
+      @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+      .card {
+        background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+        padding: 18px; box-shadow: var(--shadow); cursor: pointer;
+        display: flex; flex-direction: column; gap: 9px;
+        transition: transform .15s ease;
+      }
+      .card:hover { transform: translateY(-2px); }
+      @media (prefers-reduced-motion: reduce) { .card:hover { transform: none; } }
+      .card-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+      .card-name { font-size: 19px; font-weight: 900; line-height: 1.3; margin: 0; }
+      .cat-tag {
+        flex: none; font-size: 12px; font-weight: 700; color: var(--green);
+        background: var(--green-bg); border-radius: 6px; padding: 3px 8px;
+      }
+      .score-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .score-num { font-size: 22px; font-weight: 900; color: var(--amber); line-height: 1; }
+      .stars { color: var(--amber); font-size: 15px; letter-spacing: 1px; line-height: 1; }
+      .stars .off { color: var(--line); }
+      .review-count { color: var(--ink-faint); font-size: 12.5px; }
+      .no-score { color: var(--ink-faint); font-size: 13px; }
+      .card-note { color: var(--ink-soft); margin: 0; font-size: 14px; }
+      .card-note::before { content: "“"; color: var(--red); font-weight: 900; }
+      .card-note::after { content: "”"; color: var(--red); font-weight: 900; }
+      .meta-list { display: flex; flex-direction: column; gap: 4px; font-size: 13.5px; color: var(--ink-soft); }
+      .meta-list span b { color: var(--ink); font-weight: 600; }
+      .tag-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: auto; padding-top: 4px; }
+      .tag {
+        font-size: 12px; border: 1px solid var(--line); color: var(--ink-soft);
+        border-radius: 999px; padding: 2px 9px; background: var(--surface-2);
+      }
+      .tag.health { border-color: var(--green); color: var(--green); background: var(--green-bg); font-weight: 700; }
+      .card-foot { display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--line); padding-top: 10px; margin-top: 2px; }
+      .added-by { font-size: 12.5px; color: var(--ink-faint); }
+      .rate-link { background: none; border: 0; color: var(--red); font-weight: 700; font-size: 13.5px; padding: 2px 0; }
+
+      /* ---------- states ---------- */
+      .state-box {
+        text-align: center; padding: 56px 20px; background: var(--surface);
+        border: 1.5px dashed var(--line); border-radius: var(--radius); margin-top: 14px;
+      }
+      .state-box .big { font-family: "Noto Serif SC", serif; font-size: 24px; font-weight: 900; margin: 0 0 8px; }
+      .state-box p { color: var(--ink-soft); margin: 0 auto 18px; max-width: 26em; }
+      .skeleton { height: 190px; border-radius: var(--radius); background: var(--surface-2); }
+
+      /* ---------- modal ---------- */
+      .overlay {
+        position: fixed; inset: 0; background: rgba(10, 18, 12, .55);
+        display: none; align-items: flex-end; justify-content: center; z-index: 50;
+        padding: 0;
+      }
+      .overlay.open { display: flex; }
+      .sheet {
+        background: var(--surface); width: 100%; max-width: 620px; max-height: 92dvh;
+        overflow-y: auto; border-radius: 20px 20px 0 0; padding: 22px 20px 30px;
+      }
+      @media (min-width: 640px) {
+        .overlay { align-items: center; padding: 20px; }
+        .sheet { border-radius: 20px; }
+      }
+      .sheet-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+      .sheet-title { font-size: 21px; font-weight: 900; margin: 0; line-height: 1.3; }
+      .close-btn { background: var(--surface-2); border: 0; width: 34px; height: 34px; border-radius: 50%; font-size: 16px; flex: none; line-height: 1; }
+      form .field { margin-top: 14px; }
+      form label { display: block; font-weight: 700; font-size: 13.5px; margin-bottom: 6px; }
+      form label .req { color: var(--red); }
+      form label .hint { font-weight: 400; color: var(--ink-faint); font-size: 12.5px; }
+      form input[type="text"], form input[type="number"], form select, form textarea {
+        width: 100%; padding: 10px 12px; border: 1.5px solid var(--line);
+        border-radius: 10px; background: var(--surface); outline: none;
+      }
+      form input:focus, form select:focus, form textarea:focus { border-color: var(--green); }
+      form textarea { resize: vertical; min-height: 74px; }
+      .check-row { display: flex; align-items: center; gap: 9px; margin-top: 16px; font-weight: 500; font-size: 14px; }
+      .check-row input { width: 19px; height: 19px; accent-color: var(--green); }
+      .submit-btn {
+        width: 100%; margin-top: 20px; background: var(--green); color: #fff; border: 0;
+        border-radius: 12px; padding: 13px; font-weight: 700; font-size: 15.5px;
+      }
+      .submit-btn:disabled { opacity: .55; cursor: wait; }
+      .submit-btn.red { background: var(--red); }
+      .form-err { color: var(--red); font-size: 13.5px; margin-top: 10px; min-height: 1.2em; }
+
+      .star-picker { display: flex; gap: 4px; }
+      .star-picker button {
+        background: none; border: 0; font-size: 32px; line-height: 1; padding: 2px;
+        color: var(--line);
+      }
+      .star-picker button.lit { color: var(--amber); }
+
+      .detail-meta { margin-top: 12px; }
+      .reviews-head { font-size: 16px; font-weight: 900; margin: 24px 0 4px; border-top: 1px solid var(--line); padding-top: 18px; }
+      .review-item { padding: 12px 0; border-bottom: 1px dashed var(--line); }
+      .review-item:last-child { border-bottom: 0; }
+      .review-top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+      .review-author { font-weight: 700; font-size: 14px; }
+      .review-time { color: var(--ink-faint); font-size: 12px; flex: none; }
+      .review-text { margin: 5px 0 0; color: var(--ink-soft); font-size: 14px; white-space: pre-wrap; word-break: break-word; }
+      .empty-reviews { color: var(--ink-faint); font-size: 13.5px; padding: 10px 0; }
+
+      .toast {
+        position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(20px);
+        background: var(--ink); color: var(--bg); padding: 11px 20px; border-radius: 999px;
+        font-size: 14px; font-weight: 500; opacity: 0; pointer-events: none; transition: all .25s ease;
+        z-index: 99; max-width: calc(100vw - 32px); text-align: center;
+      }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      footer { max-width: 1060px; margin: 0 auto; padding: 0 18px 34px; color: var(--ink-faint); font-size: 12.5px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="head-inner">
+        <div class="head-top">
+          <div>
+            <h1>辽工程好吃小馆<span class="seal">好吃红榜</span></h1>
+            <p class="head-sub">辽宁工程技术大学同学共建的小馆墙——好吃、健康、价格实在的，统统推上来，让更多人吃到。</p>
+          </div>
+        </div>
+        <div class="head-meta">
+          <span class="live-pill"><span class="live-dot" id="liveDot"></span><span id="liveText">正在连接云端…</span></span>
+          <button class="nick-btn" id="nickBtn" type="button">设置昵称</button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div class="toolbar">
+        <div class="tool-row">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.8-3.8"/></svg>
+            <input type="text" id="searchInput" placeholder="搜店名、推荐菜、标签…" autocomplete="off" />
+          </div>
+          <select class="sort" id="sortSelect" aria-label="排序">
+            <option value="score">综合评分最高</option>
+            <option value="newest">最新添加</option>
+            <option value="reviews">评价最多</option>
+          </select>
+          <button class="add-btn" id="addBtn" type="button">＋ 推荐一家小馆</button>
+        </div>
+        <div class="chips" id="catChips"></div>
+      </div>
+
+      <p class="stats-line" id="statsLine"></p>
+      <div id="listArea"></div>
+    </main>
+
+    <footer>数据存放在云端，所有打开这个页面的同学看到的是同一份，每 10 秒自动同步一次新内容。</footer>
+
+    <!-- 添加小馆 -->
+    <div class="overlay" id="addOverlay">
+      <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="addTitle">
+        <div class="sheet-head">
+          <h2 class="sheet-title" id="addTitle">推荐一家小馆</h2>
+          <button class="close-btn" type="button" data-close="addOverlay" aria-label="关闭">✕</button>
+        </div>
+        <form id="addForm" novalidate>
+          <div class="field">
+            <label for="fName">店名 <span class="req">*</span></label>
+            <input type="text" id="fName" maxlength="40" placeholder="比如：校门口老王拉面" />
+          </div>
+          <div class="field">
+            <label for="fCategory">分类 <span class="req">*</span></label>
+            <select id="fCategory"></select>
+          </div>
+          <div class="field">
+            <label for="fLocation">位置 <span class="hint">写清楚在哪，方便大家找</span></label>
+            <input type="text" id="fLocation" maxlength="60" placeholder="比如：东门出去右转 200 米" />
+          </div>
+          <div class="field">
+            <label for="fPrice">人均消费（元）</label>
+            <input type="number" id="fPrice" min="1" max="999" step="1" inputmode="numeric" placeholder="比如：15" />
+          </div>
+          <div class="field">
+            <label for="fDishes">推荐菜 <span class="hint">多道菜用顿号隔开</span></label>
+            <input type="text" id="fDishes" maxlength="80" placeholder="比如：牛肉拉面、凉拌黄瓜" />
+          </div>
+          <div class="field">
+            <label for="fTags">标签 <span class="hint">用逗号隔开，最多 5 个</span></label>
+            <input type="text" id="fTags" maxlength="60" placeholder="比如：分量足, 不辣, 出餐快" />
+          </div>
+          <div class="field">
+            <label for="fNote">推荐语 <span class="req">*</span> <span class="hint">一句话说清它好在哪</span></label>
+            <textarea id="fNote" maxlength="200" placeholder="比如：汤头是真骨头熬的，蔬菜给得特别多，吃完不腻。"></textarea>
+          </div>
+          <div class="check-row">
+            <input type="checkbox" id="fHealthy" />
+            <label for="fHealthy" style="margin:0;font-weight:500;">这家主打健康：少油少盐 / 新鲜现做 / 蔬菜多</label>
+          </div>
+          <p class="form-err" id="addErr"></p>
+          <button class="submit-btn red" id="addSubmit" type="submit">发到小馆墙上</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 店铺详情 + 评价 -->
+    <div class="overlay" id="detailOverlay">
+      <div class="sheet" role="dialog" aria-modal="true">
+        <div class="sheet-head">
+          <h2 class="sheet-title" id="dName"></h2>
+          <button class="close-btn" type="button" data-close="detailOverlay" aria-label="关闭">✕</button>
+        </div>
+        <div id="dBody"></div>
+        <h3 class="reviews-head" id="dReviewsHead">大家的评价</h3>
+        <div id="dReviews"></div>
+        <form id="reviewForm" novalidate>
+          <div class="field">
+            <label>给它打分 <span class="req">*</span></label>
+            <div class="star-picker" id="starPicker"></div>
+          </div>
+          <div class="field">
+            <label for="rText">写句评价 <span class="hint">好吃在哪、坑在哪，都说说</span></label>
+            <textarea id="rText" maxlength="300" placeholder="比如：二刷了，分量还是足，青菜新鲜，就是中午人多要等十分钟。"></textarea>
+          </div>
+          <p class="form-err" id="reviewErr"></p>
+          <button class="submit-btn" id="reviewSubmit" type="submit">发表评价</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 昵称 -->
+    <div class="overlay" id="nickOverlay">
+      <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="nickTitle">
+        <div class="sheet-head">
+          <h2 class="sheet-title" id="nickTitle">先留个昵称</h2>
+          <button class="close-btn" type="button" data-close="nickOverlay" aria-label="关闭">✕</button>
+        </div>
+        <p style="color:var(--ink-soft);margin:10px 0 0;">推荐小馆和写评价时，大家会看到这个名字。随便起一个就行，只存在你这台设备上。</p>
+        <form id="nickForm" novalidate>
+          <div class="field">
+            <label for="nickInput">昵称 <span class="req">*</span></label>
+            <input type="text" id="nickInput" maxlength="16" placeholder="比如：干饭组组长" />
+          </div>
+          <p class="form-err" id="nickErr"></p>
+          <button class="submit-btn" type="submit">就它了</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+      'use strict';
+      /* 云后端配置：与共读阅读器共用同一个 Bmob 应用（仅客户端 App ID + REST Key，无 Master Key）
+         域名按顺序逐个尝试：某个域名在当前网络（比如微信内置浏览器）连不通时自动换下一个，
+         全部指向同一个 Bmob 后端，数据是同一份。 */
+      var CLOUD = {
+        appId: '78d5d76f4c2eb5373f953d11715cf1bc',
+        restKey: '8faf46e04f30d1e8feaaa64c81f59bd0',
+        baseUrls: ['https://api.codenow.cn', 'https://api2.bmob.cn', 'https://api.bmob.cn']
+      };
+      var baseIdx = 0;          /* 当前优先使用的域名下标，连通后会记住 */
+      var REQ_TIMEOUT = 10000;  /* 单次请求超时（毫秒），微信网络慢时不无限等 */
+      var CATEGORIES = ['面馆', '米饭快餐', '炒菜小馆', '饺子馄饨', '麻辣烫冒菜', '烧烤', '轻食健康', '其他'];
+      var POLL_MS = 10000;
+
+      var state = {
+        shops: [],
+        reviews: [],
+        loaded: false,
+        loadError: false,
+        filterCat: '全部',
+        healthyOnly: false,
+        search: '',
+        sort: 'score',
+        detailId: null,
+        pickedStars: 0,
+        nick: ''
+      };
+      try { state.nick = localStorage.getItem('foodwall_nickname') || ''; } catch (e) { state.nick = ''; }
+
+      var $ = function (id) { return document.getElementById(id); };
+
+      function esc(s) {
+        return String(s == null ? '' : s)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      }
+
+      /* 向某个域名发一次请求：先用 fetch；fetch 在微信等老旧内置浏览器里不可用或
+         直接报错时，退回 XMLHttpRequest 再试一次。带超时，卡住会按失败处理好让上层换域名。 */
+      function requestOnce(baseUrl, path, method, body) {
+        var url = baseUrl + '/1/classes/' + path;
+        var payload = body ? JSON.stringify(body) : null;
+        function byFetch() {
+          var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+          var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, REQ_TIMEOUT) : null;
+          var opts = {
+            method: method,
+            mode: 'cors',
+            credentials: 'omit',
+            cache: 'no-store',
+            headers: {
+              'X-Bmob-Application-Id': CLOUD.appId,
+              'X-Bmob-REST-API-Key': CLOUD.restKey,
+              'Content-Type': 'application/json'
+            }
+          };
+          if (ctrl) opts.signal = ctrl.signal;
+          if (payload) opts.body = payload;
+          return fetch(url, opts).then(function (r) {
+            if (timer) clearTimeout(timer);
+            return r.text().then(function (txt) {
+              var data = {};
+              try { data = JSON.parse(txt); } catch (e) { data = {}; }
+              return { ok: r.ok, status: r.status, data: data };
+            });
+          }, function (err) {
+            if (timer) clearTimeout(timer);
+            throw err;
+          });
+        }
+        function byXhr() {
+          return new Promise(function (resolve, reject) {
+            var xhr = new XMLHttpRequest();
+            xhr.open(method, url, true);
+            xhr.timeout = REQ_TIMEOUT;
+            xhr.setRequestHeader('X-Bmob-Application-Id', CLOUD.appId);
+            xhr.setRequestHeader('X-Bmob-REST-API-Key', CLOUD.restKey);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function () {
+              var data = {};
+              try { data = JSON.parse(xhr.responseText); } catch (e) { data = {}; }
+              resolve({ ok: xhr.status >= 200 && xhr.status < 300, status: xhr.status, data: data });
+            };
+            xhr.onerror = function () { reject(new Error('网络请求失败')); };
+            xhr.ontimeout = function () { reject(new Error('网络请求超时')); };
+            xhr.send(payload);
+          });
+        }
+        var p = (typeof fetch !== 'undefined') ? byFetch() : byXhr();
+        return p.catch(function () { return byXhr(); });
+      }
+
+      /* 逐个域名尝试：网络层失败（含超时、被拦截）就换下一个域名；
+         服务器明确返回的业务错误（如参数问题）不换域名、直接抛出。
+         成功后记住这个域名，后续请求优先用它。 */
+      function bmob(path, method, body) {
+        method = method || 'GET';
+        var order = [];
+        var i;
+        for (i = 0; i < CLOUD.baseUrls.length; i++) order.push((baseIdx + i) % CLOUD.baseUrls.length);
+        function attempt(k) {
+          var idx = order[k];
+          return requestOnce(CLOUD.baseUrls[idx], path, method, body).then(function (res) {
+            var data = res.data || {};
+            /* 101 = 表还没建（尚无任何数据），按空列表处理 */
+            if (data.code === 101) { baseIdx = idx; return { results: [] }; }
+            if (!res.ok) {
+              var he = new Error((data && data.error) || ('HTTP ' + res.status));
+              he.__http = true;
+              throw he;
+            }
+            baseIdx = idx;
+            return data;
+          }).catch(function (err) {
+            /* 服务器明确返回的错误直接抛出；网络层失败换下一个域名再试 */
+            if (err && err.__http) throw err;
+            if (k + 1 < order.length) return attempt(k + 1);
+            throw new Error('网络连接失败');
+          });
+        }
+        return attempt(0);
+      }
+
+      function reviewsOf(shopId) {
+        return state.reviews.filter(function (r) { return r.shopId === shopId; });
+      }
+      function avgOf(shopId) {
+        var list = reviewsOf(shopId);
+        if (!list.length) return null;
+        var sum = 0;
+        list.forEach(function (r) { sum += Number(r.stars) || 0; });
+        return sum / list.length;
+      }
+      function starStr(avg) {
+        if (avg == null) return '';
+        var full = Math.round(avg);
+        var out = '';
+        for (var i = 1; i <= 5; i++) out += '<span class="' + (i <= full ? '' : 'off') + '">★</span>';
+        return out;
+      }
+      function fmtTime(iso) {
+        var d = new Date(iso);
+        if (isNaN(d.getTime())) return '';
+        var now = new Date();
+        var sameDay = d.toDateString() === now.toDateString();
+        var hh = ('0' + d.getHours()).slice(-2), mm = ('0' + d.getMinutes()).slice(-2);
+        if (sameDay) return '今天 ' + hh + ':' + mm;
+        return (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + hh + ':' + mm;
+      }
+
+      function toast(msg) {
+        var t = $('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        clearTimeout(t._timer);
+        t._timer = setTimeout(function () { t.classList.remove('show'); }, 2600);
+      }
+
+      /* ---------- 渲染 ---------- */
+      function renderChips() {
+        var html = '<button type="button" class="chip' + (state.filterCat === '全部' && !state.healthyOnly ? ' active' : '') + '" data-cat="全部">全部</button>';
+        CATEGORIES.forEach(function (c) {
+          html += '<button type="button" class="chip' + (state.filterCat === c && !state.healthyOnly ? ' active' : '') + '" data-cat="' + esc(c) + '">' + esc(c) + '</button>';
+        });
+        html += '<button type="button" class="chip healthy' + (state.healthyOnly ? ' active' : '') + '" data-healthy="1">🥬 只看健康之选</button>';
+        $('catChips').innerHTML = html;
+      }
+
+      function visibleShops() {
+        var q = state.search.trim().toLowerCase();
+        var list = state.shops.filter(function (s) {
+          if (state.healthyOnly && !s.healthy) return false;
+          if (!state.healthyOnly && state.filterCat !== '全部' && s.category !== state.filterCat) return false;
+          if (q) {
+            var hay = [s.name, s.category, s.location, s.dishes, (s.tags || []).join(' '), s.note].join(' ').toLowerCase();
+            if (hay.indexOf(q) === -1) return false;
+          }
+          return true;
+        });
+        list.sort(function (a, b) {
+          if (state.sort === 'newest') return new Date(b.createdAt) - new Date(a.createdAt);
+          if (state.sort === 'reviews') return reviewsOf(b.objectId).length - reviewsOf(a.objectId).length;
+          var av = avgOf(a.objectId), bv = avgOf(b.objectId);
+          if (bv == null && av == null) return reviewsOf(b.objectId).length - reviewsOf(a.objectId).length;
+          if (bv == null) return -1;
+          if (av == null) return 1;
+          if (bv !== av) return bv - av;
+          return reviewsOf(b.objectId).length - reviewsOf(a.objectId).length;
+        });
+        return list;
+      }
+
+      function shopCard(s) {
+        var avg = avgOf(s.objectId);
+        var count = reviewsOf(s.objectId).length;
+        var scoreHtml = avg == null
+          ? '<span class="no-score">还没有人打分，来当第一个</span>'
+          : '<span class="score-num">' + avg.toFixed(1) + '</span><span class="stars">' + starStr(avg) + '</span><span class="review-count">' + count + ' 条评价</span>';
+        var tags = (s.tags || []).slice(0, 5).map(function (t) { return '<span class="tag">' + esc(t) + '</span>'; }).join('');
+        if (s.healthy) tags = '<span class="tag health">健康之选</span>' + tags;
+        var meta = '';
+        if (s.location) meta += '<span>📍 <b>' + esc(s.location) + '</b></span>';
+        if (s.dishes) meta += '<span>🍽 推荐菜：<b>' + esc(s.dishes) + '</b></span>';
+        if (s.avgPrice) meta += '<span>💰 人均约 <b>' + esc(s.avgPrice) + ' 元</b></span>';
+        return '<article class="card" data-open="' + esc(s.objectId) + '">' +
+          '<div class="card-head"><h3 class="card-name">' + esc(s.name) + '</h3><span class="cat-tag">' + esc(s.category || '其他') + '</span></div>' +
+          '<div class="score-row">' + scoreHtml + '</div>' +
+          (s.note ? '<p class="card-note">' + esc(s.note) + '</p>' : '') +
+          (meta ? '<div class="meta-list">' + meta + '</div>' : '') +
+          (tags ? '<div class="tag-row">' + tags + '</div>' : '') +
+          '<div class="card-foot"><span class="added-by">' + esc(s.addedBy || '一位同学') + ' 推荐 · ' + fmtTime(s.createdAt) + '</span>' +
+          '<button type="button" class="rate-link" data-rate="' + esc(s.objectId) + '">打分评价 →</button></div>' +
+          '</article>';
+      }
+
+      function render() {
+        renderChips();
+        $('nickBtn').textContent = state.nick ? ('昵称：' + state.nick) : '设置昵称';
+        var area = $('listArea');
+        if (state.loadError) {
+          $('statsLine').textContent = '';
+          area.innerHTML = '<div class="state-box"><p class="big">连接云端失败</p><p>页面正在自动换线路重试。在微信里打开时网络容易被拦，稍等十几秒还没好，可以点右上角「···」选「在浏览器中打开」，或切换一下 Wi-Fi / 流量再点下面按钮。</p><button class="add-btn" type="button" id="retryBtn">重新连接</button></div>';
+          $('retryBtn').addEventListener('click', refresh);
+          return;
+        }
+        if (!state.loaded) {
+          $('statsLine').textContent = '';
+          area.innerHTML = '<div class="grid"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>';
+          return;
+        }
+        $('statsLine').innerHTML = '墙上共有 <b>' + state.shops.length + '</b> 家小馆 · <b>' + state.reviews.length + '</b> 条评价' +
+          (state.shops.length ? '，正在显示 <b>' + visibleShops().length + '</b> 家' : '');
+        if (!state.shops.length) {
+          area.innerHTML = '<div class="state-box"><p class="big">墙上还空着，等你贴第一家</p>' +
+            '<p>学校周边哪家小馆好吃又健康？把它推荐上来，全校同学打开这个页面都能看到，还能给它打分、写评价。</p>' +
+            '<button class="add-btn" type="button" id="emptyAddBtn">＋ 推荐第一家小馆</button></div>';
+          $('emptyAddBtn').addEventListener('click', openAdd);
+          return;
+        }
+        var list = visibleShops();
+        if (!list.length) {
+          area.innerHTML = '<div class="state-box"><p class="big">这个筛选下还没有小馆</p><p>换个分类看看，或者把你心里的那家推荐上来。</p><button class="add-btn" type="button" id="emptyAddBtn2">＋ 推荐一家小馆</button></div>';
+          $('emptyAddBtn2').addEventListener('click', openAdd);
+          return;
+        }
+        area.innerHTML = '<div class="grid">' + list.map(shopCard).join('') + '</div>';
+        if (state.detailId) renderDetail(false);
+      }
+
+      function renderDetail(keepScroll) {
+        var s = null;
+        state.shops.forEach(function (x) { if (x.objectId === state.detailId) s = x; });
+        if (!s) { closeOverlay('detailOverlay'); return; }
+        var avg = avgOf(s.objectId);
+        var list = reviewsOf(s.objectId).slice().sort(function (a, b) { return new Date(b.createdAt) - new Date(a.createdAt); });
+        $('dName').textContent = s.name;
+        var tags = (s.tags || []).map(function (t) { return '<span class="tag">' + esc(t) + '</span>'; }).join('');
+        if (s.healthy) tags = '<span class="tag health">健康之选</span>' + tags;
+        var meta = '';
+        meta += '<span>🏷 分类：<b>' + esc(s.category || '其他') + '</b></span>';
+        if (s.location) meta += '<span>📍 位置：<b>' + esc(s.location) + '</b></span>';
+        if (s.dishes) meta += '<span>🍽 推荐菜：<b>' + esc(s.dishes) + '</b></span>';
+        if (s.avgPrice) meta += '<span>💰 人均约 <b>' + esc(s.avgPrice) + ' 元</b></span>';
+        $('dBody').innerHTML =
+          '<div class="score-row" style="margin-top:12px;">' +
+          (avg == null ? '<span class="no-score">还没有人打分</span>'
+            : '<span class="score-num">' + avg.toFixed(1) + '</span><span class="stars">' + starStr(avg) + '</span><span class="review-count">' + list.length + ' 条评价</span>') +
+          '</div>' +
+          (s.note ? '<p class="card-note" style="margin-top:10px;">' + esc(s.note) + '</p>' : '') +
+          '<div class="meta-list detail-meta">' + meta + '</div>' +
+          (tags ? '<div class="tag-row">' + tags + '</div>' : '') +
+          '<p class="added-by" style="margin-top:10px;">' + esc(s.addedBy || '一位同学') + ' 推荐 · ' + fmtTime(s.createdAt) + '</p>';
+        $('dReviewsHead').textContent = '大家的评价（' + list.length + '）';
+        $('dReviews').innerHTML = list.length ? list.map(function (r) {
+          return '<div class="review-item"><div class="review-top"><span class="review-author">' + esc(r.author || '一位同学') +
+            '</span><span class="review-time">' + fmtTime(r.createdAt) + '</span></div>' +
+            '<span class="stars" style="font-size:13px;">' + starStr(Number(r.stars) || 0) + '</span>' +
+            (r.text ? '<p class="review-text">' + esc(r.text) + '</p>' : '') + '</div>';
+        }).join('') : '<p class="empty-reviews">还没有评价，快来写下第一条。</p>';
+      }
+
+      function renderStarPicker() {
+        var html = '';
+        for (var i = 1; i <= 5; i++) {
+          html += '<button type="button" data-star="' + i + '" class="' + (i <= state.pickedStars ? 'lit' : '') + '" aria-label="' + i + ' 星">★</button>';
+        }
+        $('starPicker').innerHTML = html;
+      }
+
+      /* ---------- 数据同步 ---------- */
+      function setLive(ok, text) {
+        var dot = $('liveDot');
+        dot.className = 'live-dot' + (ok ? ' on' : ' err');
+        $('liveText').textContent = text;
+      }
+      var refreshing = false;
+      function refresh() {
+        if (refreshing) return Promise.resolve();
+        refreshing = true;
+        /* 一轮里最多连试 3 次（每次都会轮换云端域名），间隔递增；
+           微信内置浏览器网络偶尔抖动时，多数能在这几秒内自己恢复 */
+        var delays = [0, 2500, 5000];
+        function tryLoad(k) {
+          return Promise.all([
+            bmob('FoodShops?order=-createdAt&limit=500'),
+            bmob('FoodReviews?order=-createdAt&limit=1000')
+          ]).catch(function (err) {
+            if (k + 1 < delays.length) {
+              return new Promise(function (res) { setTimeout(res, delays[k + 1]); }).then(function () { return tryLoad(k + 1); });
+            }
+            throw err;
+          });
+        }
+        return tryLoad(0).then(function (res) {
+          refreshing = false;
+          state.shops = (res[0] && res[0].results) || [];
+          state.reviews = (res[1] && res[1].results) || [];
+          state.loaded = true;
+          state.loadError = false;
+          var now = new Date();
+          setLive(true, '实时同步中 · 刚刚更新 ' + ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2) + ':' + ('0' + now.getSeconds()).slice(-2));
+          render();
+        }).catch(function () {
+          refreshing = false;
+          state.loadError = !state.loaded;
+          if (state.loaded) setLive(false, '同步失败，正在重试…');
+          else setLive(false, '连接失败，正在重试…');
+          render();
+        });
+      }
+
+      /* ---------- 弹层 ---------- */
+      function openOverlay(id) { $(id).classList.add('open'); document.body.style.overflow = 'hidden'; }
+      function closeOverlay(id) {
+        $(id).classList.remove('open');
+        if (!document.querySelector('.overlay.open')) document.body.style.overflow = '';
+        if (id === 'detailOverlay') state.detailId = null;
+      }
+      function ensureNick(next) {
+        if (state.nick) { next(); return; }
+        state._afterNick = next;
+        $('nickInput').value = '';
+        $('nickErr').textContent = '';
+        openOverlay('nickOverlay');
+        setTimeout(function () { $('nickInput').focus(); }, 60);
+      }
+      function openAdd() {
+        ensureNick(function () {
+          $('addErr').textContent = '';
+          openOverlay('addOverlay');
+          setTimeout(function () { $('fName').focus(); }, 60);
+        });
+      }
+      function openDetail(id) {
+        state.detailId = id;
+        state.pickedStars = 0;
+        $('rText').value = '';
+        $('reviewErr').textContent = '';
+        renderStarPicker();
+        renderDetail(true);
+        openOverlay('detailOverlay');
+      }
+
+      /* ---------- 事件 ---------- */
+      document.addEventListener('click', function (e) {
+        var closer = e.target.closest('[data-close]');
+        if (closer) { closeOverlay(closer.getAttribute('data-close')); return; }
+        if (e.target.classList && e.target.classList.contains('overlay')) { closeOverlay(e.target.id); return; }
+        var chip = e.target.closest('[data-cat]');
+        if (chip) { state.filterCat = chip.getAttribute('data-cat'); state.healthyOnly = false; render(); return; }
+        var hchip = e.target.closest('[data-healthy]');
+        if (hchip) { state.healthyOnly = !state.healthyOnly; render(); return; }
+        var rate = e.target.closest('[data-rate]');
+        if (rate) { e.stopPropagation(); openDetail(rate.getAttribute('data-rate')); return; }
+        var card = e.target.closest('[data-open]');
+        if (card) { openDetail(card.getAttribute('data-open')); return; }
+        var star = e.target.closest('[data-star]');
+        if (star) { state.pickedStars = Number(star.getAttribute('data-star')); renderStarPicker(); return; }
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') document.querySelectorAll('.overlay.open').forEach(function (o) { closeOverlay(o.id); });
+      });
+
+      $('addBtn').addEventListener('click', openAdd);
+      $('nickBtn').addEventListener('click', function () {
+        state._afterNick = null;
+        $('nickInput').value = state.nick;
+        $('nickErr').textContent = '';
+        openOverlay('nickOverlay');
+      });
+      $('searchInput').addEventListener('input', function (e) { state.search = e.target.value; render(); });
+      $('sortSelect').addEventListener('change', function (e) { state.sort = e.target.value; render(); });
+
+      /* 分类下拉填充 */
+      $('fCategory').innerHTML = CATEGORIES.map(function (c) { return '<option value="' + esc(c) + '">' + esc(c) + '</option>'; }).join('');
+
+      $('nickForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var v = $('nickInput').value.trim();
+        if (!v) { $('nickErr').textContent = '昵称不能为空，随便起一个就行。'; return; }
+        state.nick = v;
+        try { localStorage.setItem('foodwall_nickname', v); } catch (err) {}
+        closeOverlay('nickOverlay');
+        render();
+        toast('好嘞，以后就叫你「' + v + '」');
+        var next = state._afterNick; state._afterNick = null;
+        if (next) next();
+      });
+
+      $('addForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var name = $('fName').value.trim();
+        var note = $('fNote').value.trim();
+        if (!name) { $('addErr').textContent = '店名还没填。'; return; }
+        if (!note) { $('addErr').textContent = '写一句推荐语吧，让大家知道它好在哪。'; return; }
+        var tags = $('fTags').value.split(/[,，、]/).map(function (t) { return t.trim(); }).filter(Boolean).slice(0, 5);
+        var price = $('fPrice').value ? Number($('fPrice').value) : null;
+        var body = {
+          name: name,
+          category: $('fCategory').value,
+          location: $('fLocation').value.trim(),
+          avgPrice: price,
+          dishes: $('fDishes').value.trim(),
+          tags: tags,
+          healthy: $('fHealthy').checked,
+          note: note,
+          addedBy: state.nick
+        };
+        var btn = $('addSubmit');
+        btn.disabled = true; btn.textContent = '正在发到墙上…';
+        bmob('FoodShops', 'POST', body).then(function () {
+          btn.disabled = false; btn.textContent = '发到小馆墙上';
+          $('addForm').reset();
+          closeOverlay('addOverlay');
+          toast('「' + name + '」已经上墙，全校同学都能看到了');
+          refresh();
+        }).catch(function () {
+          btn.disabled = false; btn.textContent = '发到小馆墙上';
+          $('addErr').textContent = '提交失败，网络可能不稳，再试一次。';
+        });
+      });
+
+      $('reviewForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (!state.pickedStars) { $('reviewErr').textContent = '先点星星给它打个分。'; return; }
+        ensureNick(function () {
+          var body = {
+            shopId: state.detailId,
+            stars: state.pickedStars,
+            text: $('rText').value.trim(),
+            author: state.nick
+          };
+          var btn = $('reviewSubmit');
+          btn.disabled = true; btn.textContent = '正在发表…';
+          bmob('FoodReviews', 'POST', body).then(function () {
+            btn.disabled = false; btn.textContent = '发表评价';
+            state.pickedStars = 0;
+            $('rText').value = '';
+            renderStarPicker();
+            toast('评价已发表，大家都能看到');
+            refresh();
+          }).catch(function () {
+            btn.disabled = false; btn.textContent = '发表评价';
+            $('reviewErr').textContent = '发表失败，网络可能不稳，再试一次。';
+          });
+        });
+      });
+
+      /* ---------- 启动 ---------- */
+      render();
+      refresh();
+      setInterval(function () { if (!document.hidden) refresh(); }, POLL_MS);
+      document.addEventListener('visibilitychange', function () { if (!document.hidden) refresh(); });
+    </script>
+  </body>
+</html>
